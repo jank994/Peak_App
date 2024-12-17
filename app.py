@@ -21,23 +21,22 @@ def get_db_connection():
 def get_mountains():
     conn = get_db_connection()
     cursor = conn.cursor()
-
+    
     cursor.execute('''SELECT * FROM mountains''')
     mountains = cursor.fetchall()  # Dobimo seznam
     cursor.close()
     conn.close()
-
-    mountains_list = []  # ustvarimo slovar
+    
+    mountains_list = [] #ustvarimo slovar
     for mountain in mountains:
         mountains_list.append({
             "mountain_id": mountain[0],
             "mountain": mountain[1],
-            "altitude": mountain[2],
-            "country": mountain[3],
-            "lat": float(mountain[4]),
-            "lon": float(mountain[5])
+            "altitude": mountain[2], 
+            "country": mountain[3], 
+            "lat": mountain[4],
+            "lon": mountain[5]
         })
-
     return jsonify(mountains_list)
 
 
