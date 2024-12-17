@@ -34,11 +34,11 @@ def get_mountains():
             "mountain": mountain[1],
             "altitude": mountain[2], 
             "country": mountain[3], 
-            "lat": mountain[4],
-            "lon": mountain[5]
+            "lat": float(mountain[4]),
+            "lon": float(mountain[5])
         })
-    return jsonify(mountains_list)
 
+    return jsonify(mountains_list)
 
 @app.route('/visited', methods=['GET'])
 def get_visited_mountains():
