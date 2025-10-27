@@ -127,7 +127,7 @@ def login():
     cur.close()
     conn.close()
 
-    if user and check_password_hash(user[1], pwd):
+    if user and user[1] == pwd:
         return jsonify({"status": "ok", "user_name": user[0]})
     else:
         return jsonify({"status": "error", "message": "Napačen email ali geslo"}), 401
