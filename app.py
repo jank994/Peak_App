@@ -85,32 +85,34 @@ def insert_data():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
+    print("🟢 Prejeto:", data)
+    app.logger.info(f"Prejeto: {data}")
+
     mail = data.get('mail')
     pwd = data.get('pwd')
     user_name = data.get('user_name')
 
-    if not mail or not pwd or not name:
+    if not mail or not pwd or not user_name:
+        print("Manjkajoči podatki")
         return jsonify({"status": "error", "message": "Manjkajoči podatki"}), 400
 
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Preveri, če uporabnik že obstaja
     cur.execute("SELECT * FROM users WHERE mail = %s", (mail,))
-
     if cur.fetchone():
+        print(f"⚠️ Uporabnik {mail} že obstaja")
         cur.close()
         conn.close()
         return jsonify({"status": "error", "message": "Uporabnik že obstaja"}), 400
 
-
-    # Shrani uporabnika
-    cur.execute("INSERT INTO users (mail, psw, user_name) VALUES (%s, %s, %s)",
-                (mail, pwd, user_name))
+    cur.execute("INSERT INTO users (mail, psw, user_name) VALUES (%s, %s, %s)", (mail, pwd, user_name))
     conn.commit()
+
     cur.close()
     conn.close()
 
+    print(f"Uporabnik {user_name} registriran")
     return jsonify({"status": "ok", "message": "Registracija uspešna"})
 
 
