@@ -3,7 +3,6 @@ import psycopg2
 
 app = Flask(__name__)
 
-
 # Povezava z bazo PostgreSQL
 def get_db_connection():
     conn = psycopg2.connect(
@@ -14,7 +13,6 @@ def get_db_connection():
         port="5432"
     )
     return conn
-
 
 # API klici
 @app.route('/mountains', methods=['GET'])
@@ -40,6 +38,7 @@ def get_mountains():
 
     return jsonify(mountains_list)
 
+
 @app.route('/visited', methods=['GET'])
 def get_visited_mountains():
     conn = get_db_connection()
@@ -48,7 +47,7 @@ def get_visited_mountains():
                     SELECT mountain, altitude, country, datetime
                     FROM visited v
                    ''')
-    visited = cursor.fetchall()  # dobimo seznam
+    visited = cursor.fetchall() #dobimo seznam
     cursor.close()
     conn.close()
 
@@ -62,29 +61,6 @@ def get_visited_mountains():
         })
 
     return jsonify(visited_list)
-
-@app.route('/last_visited', methods=['GET'])
-def get_last_visited_mountains():
-    mountain = request.args.get('mountain')
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-                    SELECT mountain, datetime
-                    FROM visited v
-                    WHERE mountain = %s
-                ''', (mountain,))
-    visited = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    last_visited_list = []
-    for v in visited:
-        last_visited_list.append({
-            "mountain": v[0],
-            "datetime": v[1],
-        })
-    return jsonify(last_visited_list)
 
 
 @app.route('/insert', methods=['POST'])
@@ -104,6 +80,57 @@ def insert_data():
     conn.close()
 
     return jsonify({'message': 'Data inserted successfully'})
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    mail = data.get('mail')
+    pwd = data.get('pwd')
+    name = data.get('name')
+
+    if not mail or not pwd or not name:
+        return jsonify({"status": "error", "message": "Manjkajoči podatki"}), 400
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Preveri, če uporabnik že obstaja
+    cur.execute("SELECT * FROM users WHERE mail = %s", (mail,))
+
+    if cur.fetchone():
+        cur.close()
+        conn.close()
+        return jsonify({"status": "error", "message": "Uporabnik že obstaja"}), 400
+
+
+    # Shrani uporabnika
+    cur.execute("INSERT INTO users (mail, password, name) VALUES (%s, %s, %s)",
+                (mail, pwd, name))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return jsonify({"status": "ok", "message": "Registracija uspešna"})
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    mail = data.get('mail')
+    pwd = data.get('pwd')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT name, password FROM users WHERE mail = %s", (mail,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if user and check_password_hash(user[1], pwd):
+        return jsonify({"status": "ok", "user_name": user[0]})
+    else:
+        return jsonify({"status": "error", "message": "Napačen email ali geslo"}), 401
 
 
 if __name__ == '__main__':
