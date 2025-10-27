@@ -87,7 +87,7 @@ def register():
     data = request.json
     mail = data.get('mail')
     pwd = data.get('pwd')
-    name = data.get('name')
+    user_name = data.get('user_name')
 
     if not mail or not pwd or not name:
         return jsonify({"status": "error", "message": "Manjkajoči podatki"}), 400
@@ -105,8 +105,8 @@ def register():
 
 
     # Shrani uporabnika
-    cur.execute("INSERT INTO users (mail, password, name) VALUES (%s, %s, %s)",
-                (mail, pwd, name))
+    cur.execute("INSERT INTO users (mail, psw, user_name) VALUES (%s, %s, %s)",
+                (mail, pwd, user_name))
     conn.commit()
     cur.close()
     conn.close()
@@ -122,7 +122,7 @@ def login():
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT name, password FROM users WHERE mail = %s", (mail,))
+    cur.execute("SELECT user_name, psw FROM users WHERE mail = %s", (mail,))
     user = cur.fetchone()
     cur.close()
     conn.close()
