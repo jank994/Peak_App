@@ -122,7 +122,7 @@ def login():
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT name, password FROM users WHERE mail = 'jan'")
+    cur.execute("SELECT name, password FROM users WHERE mail = %s", (mail,))
     user = cur.fetchone()
     cur.close()
     conn.close()
